@@ -1,0 +1,33 @@
+/* App.css */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #0052D4, #4364F7);
+  color: white;
+  min-height: 100vh;
+  background-image: 
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 40px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 40px);
+}
+
+/* Optional center content styling */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.logo {
+  width: 80px;
+  height: auto;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
+}
+
+.logo:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 10px rgba(0, 216, 255, 0.6)); 
+ transform: rotate(360deg);
+}
+
