@@ -1,15 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Editor from "react-simple-wysiwyg";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const CreateBlogs = () => {
+const EditBlog = () => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
+
   const [html, setHtml] = useState("");
   const [descError, setDescError] = useState("");
   const [imageId, setImageId] = useState("");
+  const [blog, setBlogs] = useState("");
   const navigate = useNavigate();
-
+  const paramm = useParams();
   // 🔧 Fix: onChange must use correct plain text logic
   function onChange(e) {
     const value = e.target?.value || e; // depends on Editor's implementation
@@ -49,11 +57,14 @@ const CreateBlogs = () => {
     setImageId(result.img.id);
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const fetchblog = async () => {
+    const res = await fetch("http://127.0.0.1:8000/api/blog/" + paramm.id);
+    const result = await res.json();
+    setBlogs(result.data);
+    setHtml(result.data.description);
+
+    reset(result.data);
+  };
 
   // ----- Submit Form
   const formSubmit = async (data) => {
@@ -68,8 +79,8 @@ const CreateBlogs = () => {
       image_id: imageId,
     };
 
-    const res = await fetch("http://127.0.0.1:8000/api/createblog", {
-      method: "POST",
+    const res = await fetch("http://127.0.0.1:8000/api/blog/"+paramm.id, {
+      method: "PUT",
       headers: {
         "Content-type": "application/json",
       },
@@ -78,17 +89,21 @@ const CreateBlogs = () => {
 
     const result = await res.json();
     if (result.status) {
-      toast.success("Blog Added Successfully");
+      toast.success("Blog Updated Successfully");
       navigate("/");
     } else {
       toast.error("Something went wrong");
     }
   };
 
+  useEffect(() => {
+    fetchblog();
+  },  []);
+
   return (
     <div className="container py-4">
       <div className="d-flex justify-content-between pt-4 mb-4">
-        <h2>Create Blogs</h2>
+        <h2>Edit Blogs</h2>
         <a className="btn btn-dark" href="/">
           Back
         </a>
@@ -101,7 +116,7 @@ const CreateBlogs = () => {
             <div className="mb-3">
               <label className="form-label">Title</label>
               <input
-                {...register("title", { required: true, maxLength: 250 })}
+                {...register("title", { required: true, maxLength: 300 })}
                 type="text"
                 className={`form-control ${errors.title && "is-invalid"}`}
                 placeholder="Title"
@@ -111,7 +126,7 @@ const CreateBlogs = () => {
               )}
               {errors.title?.type === "maxLength" && (
                 <p className="invalid-feedback">
-                  Maximum 250 characters allowed.
+                  Maximum 300 characters allowed.
                 </p>
               )}
             </div>
@@ -122,14 +137,14 @@ const CreateBlogs = () => {
                 Short Description
               </label>
               <textarea
-                {...register("shortDesc", { maxLength: 250 })}
+                {...register("shortDesc", { maxLength: 1000 })}
                 cols={20}
                 rows={2}
                 className={`form-control ${errors.shortDesc && "is-invalid"}`}
               ></textarea>
               {errors.shortDesc?.type === "maxLength" && (
                 <p className="invalid-feedback">
-                  Maximum 250 characters allowed.
+                  Maximum 1000 characters allowed.
                 </p>
               )}
             </div>
@@ -138,6 +153,14 @@ const CreateBlogs = () => {
             <div className="mb-3">
               <label className="form-label">Image</label>
               <input type="file" onChange={handleFileChange} />
+              <div className="mt-3">
+                {blog.image && (
+                  <img
+                    className="w-50 "
+                    src={`http://127.0.0.1:8000/uploads/blogs/${blog.image}`}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Description */}
@@ -161,24 +184,18 @@ const CreateBlogs = () => {
                 Author
               </label>
               <input
-                {...register("author", { required: true, maxLength: 250 })}
+                {...register("author", { required: true })}
                 type="text"
                 className={`form-control ${errors.author && "is-invalid"}`}
                 placeholder="Author"
               />
-              {errors.author ? (
-  errors.author.type === "maxLength" ? (
-    <p className="invalid-feedback">
-      Maximum 250 characters allowed.
-    </p>
-  ) : (
-    <p className="invalid-feedback">Author is required.</p>
-  )
-) : null}
+              {errors.author && (
+                <p className="invalid-feedback">Author is required.</p>
+              )}
             </div>
 
             <button className="btn btn-dark" href="create">
-              Create
+              Edit
             </button>
           </div>
         </form>
@@ -187,4 +204,4 @@ const CreateBlogs = () => {
   );
 };
 
-export default CreateBlogs;
+export default EditBlog;
